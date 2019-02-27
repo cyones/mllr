@@ -1,0 +1,12 @@
+Package: MLLR
+Type: Package
+Title: Simple package to log the results of machine learning experiments
+Version: 0.1
+Date: 2019-02-01
+Author: Cristian A. Yones
+Maintainer: Cristian A. Yones <cyones77@gmail.com>
+Description: The package has only three main functions: one to start a new experiment,
+	other to log the parameters and results (the predictions) of a run in the current
+	experiment and last one to get the results in a data.frame.
+License: Apacha License 2.0
+RoxygenNote: 6.1.1
