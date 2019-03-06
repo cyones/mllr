@@ -5,8 +5,9 @@ Version: 0.1
 Date: 2019-02-01
 Author: Cristian A. Yones
 Maintainer: Cristian A. Yones <cyones77@gmail.com>
-Description: The package has only three main functions: one to start a new experiment,
-	other to log the parameters and results (the predictions) of a run in the current
-	experiment and last one to get the results in a data.frame.
+Description: The package has a very simple objective, to log results of machine learning experiments.
+	It supports binary, multiclass and regression problems. It is very easy to use, you select an
+	experiment at start. Then, on each experiment, log the parameters and results of the experiments
+	with only one function call. Finally, this resutls can be recovered with another function.
 License: Apacha License 2.0
 RoxygenNote: 6.1.1

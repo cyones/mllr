@@ -8,13 +8,15 @@
 #' a = 1+1
 #'
 #' @export
-log.test = function(gtruth, pred, mask=NULL, ...) {
+log.test = function(gtruth, pred, mask=NULL, problem.type=NULL, ...) {
 	if(!is.null(mask)) {
 		gtruth = gtruth[mask]
 		pred = pred[mask]
 	}
 	stopifnot(class(gtruth) == class(pred))
 	stopifnot(length(gtruth) == length(pred))
+	if(is.null(problem.type))
+		problem.type = guess.problem.type(gtruth)
 
 	cexp = get("current.experiment", envir = .MLLRenv)
 	rpath = get("results.path", envir = .MLLRenv)
@@ -25,7 +27,7 @@ log.test = function(gtruth, pred, mask=NULL, ...) {
 	for(i in 1:length(lst))
 		results[nmea, names(pr)[i]] = pr[[i]]
 
-	if(is.logical(pred)) {
+	if(problem.type=="binary") {
 		Acc = mean(pred == gtruth)
 		SE = mean(pred[gtruth])
 		SP = mean(!pred[!gtruth])
@@ -38,7 +40,7 @@ log.test = function(gtruth, pred, mask=NULL, ...) {
 		results[nmea, "G"]  = sqrt(SE*Pr)
 		results[nmea, "F1"] = (2 * SE * Pr) / (SE * Pr)
 	}
-	if(is.factor(pred)) {
+	if(problem.type=="multiclass") {
 		stopifnot(!all(sort(levels(pred)) == sort(levels(gtruth))))
 		results[nmea, "Acc"] = mean(pred == gtruth)
 		for(lv in levels(pred)) {
@@ -46,7 +48,7 @@ log.test = function(gtruth, pred, mask=NULL, ...) {
 			results[nmea, cn] = mean(pred[gtruth==lv]==lv)
 		}
 	}
-	if(is.numeric(pred)) {
+	if(problem.type=="regresion") {
 		results[nmea, "RMSE"] = sqrt(mean((pred - gtruth)^2))
 		results[nmea, "MAE"] = mean(abs(pred - gtruth))
 	}
@@ -72,4 +74,30 @@ aucroc <- function(labels, scores) {
              function(i, j) (1 + sign(pos_scores[i] - neg_scores[j]))/2)
   AUC <- mean (M)
   return(AUC)
+}
+
+
+problem.type <- function(gtruth) {
+	if(class(gtruth)=="factor" && length(levels(gtruth)) > 2)
+		return("multiclass")
+	if(class(gtruth)=="factor" && length(levels(gtruth)) == 2)
+		return("binary")
+	if(class(gtruth)=="character" && length(unique(gtruth)) > 2)
+		return("multiclass")
+	if(class(gtruth)=="character" && length(unique(gtruth)) == 2)
+		return("binary")
+	if(class(gtruth)=="numeric" && length(unique(gtruth)) > 2 &&
+	   length(unique(gtruth))/length(gtruth) < 0.01) {
+		warning("The class problem is set as multiclass,
+			since there are few unique values for the labels")
+		return("multiclass")
+	}
+	if(class(gtruth)=="numeric" && length(unique(gtruth)) == 2) {
+		warning("The class problem is set as binary,
+			since there are two unique values for the labels")
+		return("binary")
+	}
+	if(class(gtruth) == "numeric")
+		return("regresion")
+	stop("Failed to guess type of problem")
 }
