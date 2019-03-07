@@ -8,7 +8,7 @@
 #' a = 1+1
 #'
 #' @export
-log.test = function(gtruth, pred, mask=NULL, problem.type=NULL, ...) {
+log.results = function(gtruth, pred, mask=NULL, problem.type=NULL, ...) {
 	if(!is.null(mask)) {
 		gtruth = gtruth[mask]
 		pred = pred[mask]
@@ -20,12 +20,12 @@ log.test = function(gtruth, pred, mask=NULL, problem.type=NULL, ...) {
 
 	cexp = get("current.experiment", envir = .MLLRenv)
 	rpath = get("results.path", envir = .MLLRenv)
-	load(paste0(rpath, cexp))
+	load(paste0(rpath, cexp, ".rda"))
 
 	nmea = nrow(results)+1
 	lst = list(...)
 	for(i in 1:length(lst))
-		results[nmea, names(pr)[i]] = pr[[i]]
+		results[nmea, names(lst)[i]] = lst[[i]]
 
 	if(problem.type=="binary") {
 		Acc = mean(pred == gtruth)
@@ -59,7 +59,7 @@ log.test = function(gtruth, pred, mask=NULL, problem.type=NULL, ...) {
 		results[nmea, "git_hash"] = system("git rev-parse HEAD", intern=T)
 		results[nmea, "git_message"] = system("git log -1 --pretty=%B", intern=T)[1]
 	}
-	save(results, paste0(rpath, cexp))
+	save(results, file=paste0(rpath, cexp, ".rda"))
 }
 
 aucroc <- function(labels, scores) {
@@ -77,7 +77,9 @@ aucroc <- function(labels, scores) {
 }
 
 
-problem.type <- function(gtruth) {
+guess.problem.type <- function(gtruth) {
+	if(class(gtruth)=="logical")
+		return("binary")
 	if(class(gtruth)=="factor" && length(levels(gtruth)) > 2)
 		return("multiclass")
 	if(class(gtruth)=="factor" && length(levels(gtruth)) == 2)

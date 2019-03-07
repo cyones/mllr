@@ -12,8 +12,8 @@ set.experiment = function(name, overwrite=F, results.path="./results/") {
 	dir.create(results.path, showWarnings = F)
 	fname = paste0(results.path, name, ".rda")
 	if(!file.exists(fname) || overwrite) {
-		res = data.frame()
-		save(res, file = fname)
+		results = data.frame()
+		save(results, file = fname)
 	}
 	assign("current.experiment", value=name, env=.MLLRenv)
 	assign("results.path", value=results.path, env=.MLLRenv)
